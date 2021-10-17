@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define MAXLEN 100
+#define MAXLEN 100  // maximalni delka hesla
 
 void stdinToString();
 void stringToStdout();
@@ -13,16 +13,30 @@ bool containsSpecialChar();
 bool containsSequence(int lenOfSeq);
 bool containsTwoSameSubstrings(int lenOfString);
 int lenOfPassword();
+bool firstLevelSecurity();
+bool secondLevelSecurity(int param);
 
+// globalni promenne na ulozeni hesla, informace o EOF, jestli neni heslo moc velke a PARAM 
 char passwdString[MAXLEN];
 bool endOfFile = false;
 bool isNormalSize;
+int param = 1;
 
+// stats
+int varChar = 0;
+int shortest = 0;
+int avgLen = 0;
+
+//--------------
+// FUNKCE MAIN
+//--------------
 int main(){
+    param = 1;
 
     do{
         stdinToString();
-        stringToStdout();
+        
+        
 
     }while( endOfFile == false );                       
  
@@ -147,8 +161,7 @@ return false;
 int lenOfPassword(){
     int len = 0;
 
-    for (len = 0; passwdString[len] != '\0'; len++){
-        
+    for (len = 0; passwdString[len] != '\0'; len++){    
     }
     
 return len;
@@ -189,3 +202,36 @@ bool containsTwoSameSubstrings(int lenOfCommonString){
 return false;
 }
 
+// vraci, jestli plati pro uroven bezpecnosti 1
+bool firstLevelSecurity(){
+    if( containsLower() && containsUpper())
+        return true;
+    else    
+        return false;
+}
+
+// vraci, jestli plati pro uroven bezpecnosti 2
+bool secondLevelSecurity(int param){
+    
+    switch (param)
+    {
+        case 3:
+            if( firstLevelSecurity() && ( containsNumber() || containsSpecialChar() ))
+                return true;
+            else 
+                return false;
+        
+        case 4:
+            if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )\
+                return true;
+            else
+                return false;
+        
+        default:
+            if( firstLevelSecurity() )
+                return true;
+            break;
+                return false;
+    }
+    
+}
