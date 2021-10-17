@@ -10,17 +10,19 @@ bool containsLower();
 bool containsUpper();
 bool containsNumber();
 bool containsSpecialChar();
+bool containsSequence(int lenOfSeq);
+int lenOfPassword();
 
 char passwdString[MAXLEN];
 bool endOfFile = false;
 bool isNormalSize;
 
-int main(int argc, char *argv[]){
+int main(){
 
     do{
         stdinToString();
 
-        if( isNormalSize )
+        if( isNormalSize && containsSequence(3) == false)
             stringToStdout();
 
     }while( endOfFile == false );                       
@@ -108,15 +110,48 @@ bool containsSpecialChar(){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
-        if( passwdString[i] >= 32 && passwdString[i] < '0'  || 
-            passwdString[i] > '9' && passwdString[i] < 'A'  ||
-            passwdString[i] > 'Z' && passwdString[i] < 'a'  ||
-            passwdString[i] > 'z' && passwdString[i] <= 126    )
+        if( (passwdString[i] >= 32 && passwdString[i] < '0')  || 
+            (passwdString[i] > '9' && passwdString[i] < 'A')  ||
+            (passwdString[i] > 'Z' && passwdString[i] < 'a')  ||
+            (passwdString[i] > 'z' && passwdString[i] <= 12)   )
                 return true;
     }
     
 return false;
 }
 
+// vraci, jestli obsahuje sekvenci lenOfSeq stejnych znaku
+bool containsSequence(int lenOfSeq){
 
+    int lenOfPasswd = lenOfPassword();
+    bool seqIsSame;
+
+    if( lenOfPasswd >= lenOfSeq){
+
+        for (int i = 0; i <= lenOfPasswd - lenOfSeq; i++)
+        {
+            seqIsSame = true;
+            for (int j = 1; j < lenOfSeq; j++)
+            {
+                if( passwdString[i] != passwdString[j + i])
+                    seqIsSame = false;
+            }
+
+            if( seqIsSame == true)
+                return true;
+        }
+    }
+return false;
+}
+
+// vraci delku hesla
+int lenOfPassword(){
+    int len = 0;
+
+    for (len = 0; passwdString[len] != '\0'; len++){
+        
+    }
+    
+return len;
+}
 
