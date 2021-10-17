@@ -11,6 +11,7 @@ bool containsUpper();
 bool containsNumber();
 bool containsSpecialChar();
 bool containsSequence(int lenOfSeq);
+bool containsTwoSameSubstrings(int lenOfString);
 int lenOfPassword();
 
 char passwdString[MAXLEN];
@@ -21,9 +22,7 @@ int main(){
 
     do{
         stdinToString();
-
-        if( isNormalSize && containsSequence(3) == false)
-            stringToStdout();
+        stringToStdout();
 
     }while( endOfFile == false );                       
  
@@ -153,5 +152,40 @@ int lenOfPassword(){
     }
     
 return len;
+}
+
+// vraci, jestli heslo obsahuje dva stejne podretezce
+bool containsTwoSameSubstrings(int lenOfCommonString){
+    int lenOfPasswd = lenOfPassword();
+    int streak = 0;                                                         
+
+    if( lenOfPasswd >= lenOfCommonString * 2){
+
+        // Prochazi pole od 0 do (maximalni delky minus delky spolecneho retezce)
+        // a hleda stejny znak, pokud ho najde, testujou se dvojce znaku na i+1 a j+1.
+        // Vzdy kdyz se znaky rovnaji, zvysi se streak a pokud streak == lenOfCommonString funkce vraci true.
+        // Pokud se dalsi znaky v rade nerovnaji a streak != lenOfCommonString, i se vrati zpet kde bylo pri detekovani  
+        // prvniho spolecneho znaku, ale j zustane a dale se hleda prvni spolecny znak.
+
+        for (int i = 0; i <= lenOfPasswd - lenOfCommonString; i++)      
+        {
+            for (int j = lenOfCommonString + i; j < lenOfPasswd; j++)
+            {
+                if( passwdString[i] == passwdString[j])
+                {
+                    streak++; 
+                    i++;                // zvednuti i a j zaroven pro testovani dalsich spolecnych znaku
+                }
+                else{
+                    i = i - streak;     // vraceni i na pozici kde byl nalezen prvni spolecny znak, j zustava stejne
+                    streak = 0;
+                }
+                     
+                if(streak >= lenOfCommonString)
+                    return true;
+            }
+        }
+    }
+return false;
 }
 
