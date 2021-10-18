@@ -316,24 +316,24 @@ bool paramCheck(int argCount, int level, int param, char *statsString){
 
     // testovani spravneho poctu argumentu
     if( argCount < 3 || argCount > 4 ){
-        printf("\ninvalid number of parameters => /.pwcheck.exe LEVEL PARAM [--stats]\n\n");
+        printf("\ninvalid number of parameters => /.pwcheck LEVEL PARAM [--stats]\n\n");
         parametersRight = false;
     }
 
     // kontrola hodnoty parametru urcujici uroven bezpecnosti
     if( level < 1 || level > 4 ){
-        printf("/.pwcheck.exe LEVEL PARAM [--stats]\n");
-        printf("              ^ \n");
-        printf("              | \n");
+        printf("/.pwcheck LEVEL PARAM [--stats]\n");
+        printf("            ^ \n");
+        printf("            | \n");
         printf("LEVEL parameter can only be >= 1 && <= 4 \n\n");
         parametersRight = false;
     }
 
     // kontrola hodnoty parametru PARAM urcujici dodatecny parametr
     if( param < 1 || param > 4){
-        printf("/.pwcheck.exe LEVEL PARAM [--stats]\n");
-        printf("                    ^ \n");
-        printf("                    | \n");
+        printf("/.pwcheck LEVEL PARAM [--stats]\n");
+        printf("                  ^ \n");
+        printf("                  | \n");
         printf("PARAM parameter can only be >= 1 && <= 4\n\n");
         parametersRight = false;
     }
@@ -341,10 +341,10 @@ bool paramCheck(int argCount, int level, int param, char *statsString){
     // kontrola tvaru zadani nepovinneho parametru --stats
     if( argCount == 4){                                         // pokud jsou 4 argumenty => byl zadan nepovinny --stats
        if( !stringCompare(statsString, statsStringModel)){
-            printf("/.pwcheck.exe LEVEL PARAM [--stats]\n");
+            printf("/.pwcheck LEVEL PARAM [--stats]\n");
             printf("                          ^ \n");
             printf("                          | \n");
-            printf("expected --stats parameter instead of %s\n\n", statsString);
+            printf("expected --stats instead of %s\n\n", statsString);
             parametersRight = false;   
         }
     } 
