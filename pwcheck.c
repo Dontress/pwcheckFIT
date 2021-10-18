@@ -4,6 +4,18 @@
 
 #define MAXLEN 100  // maximalni delka hesla
 
+// globalni promenne na ulozeni hesla, informace o EOF, jestli neni heslo moc velke a PARAM 
+char passwdString[MAXLEN];
+bool endOfFile = false;
+bool isNormalSize;
+
+// stats
+int varChar = 0;
+int shortest = MAXLEN;
+int totalLen = 0;
+int passwdCount = 0;
+
+// Function prototypes
 void stdinToString();
 void stringToStdout();
 bool containsLower();
@@ -12,34 +24,62 @@ bool containsNumber();
 bool containsSpecialChar();
 bool containsSequence(int lenOfSeq);
 bool containsTwoSameSubstrings(int lenOfString);
-int lenOfPassword();
 bool firstLevelSecurity();
 bool secondLevelSecurity(int param);
-
-// globalni promenne na ulozeni hesla, informace o EOF, jestli neni heslo moc velke a PARAM 
-char passwdString[MAXLEN];
-bool endOfFile = false;
-bool isNormalSize;
-int param = 1;
-
-// stats
-int varChar = 0;
-int shortest = 0;
-int avgLen = 0;
+bool thirdLevelSecurity(int param);
+bool fourthLevelSecurity(int param);
+void stats(int i);
+bool paramCheck(int argCount, int level,int param, char* statsString);
+bool stringCompare(char* str1, char* str2);
+int stringLen(char *str);
 
 //--------------
 // FUNKCE MAIN
 //--------------
-int main(){
-    param = 1;
+int main(int argc, char *argv[]){
+
+    int level = atoi(argv[1]);
+    int param =  atoi(argv[2]);
+
+    if( !paramCheck(argc, level, param, argv[3]) )      // kontrola platnosti parametru
+      return 1;
 
     do{
-        stdinToString();
-        
-        
+        stdinToString();    // nacteni hesla
 
-    }while( endOfFile == false );                       
- 
+        switch ( level )
+        {
+        case 1:
+            if(firstLevelSecurity())
+                stringToStdout();       // vypsani hesla
+            break;
+        
+        case 2:
+            if(secondLevelSecurity( param ))
+                stringToStdout();
+            break;
+        
+        case 3:
+            if(thirdLevelSecurity( param ))
+                stringToStdout();
+            break;
+        
+        case 4:
+            if(fourthLevelSecurity( param ))
+                stringToStdout();
+            break;
+
+        default:
+            printf("parameter LEVEL must be integer ");
+            return 1;
+        }
+
+    }while( endOfFile == false ); 
+
+    // zjistovani zadani parametru --stats a pripadne vypsani statistik
+    if( stringCompare( argv[3] , "--stats" ) )
+        printf("\nStatistika:\nMinimalni delka: %d\nPrumerna delka: %0.1f", shortest, totalLen/(float)passwdCount);
+
 return 0;
 }
 
@@ -48,22 +88,24 @@ void stdinToString(){
     char c;
     int i;
 
-    isNormalSize = true;
+    isNormalSize = true;            // vyresetovani globalni promenne pro kazde heslo
     
     for (i = 0; (c = getchar()) != '\n'; i++)
     {
          if(c == EOF){
-            endOfFile = true;
-            break;
+            endOfFile = true;       // nastaveni globalni promenne na true pro ukonceni cyklu nacitani hesel v main
+            break;                  // diky break se EOF nezapise do hesla
         }
 
         if(i >= MAXLEN){            // osetreni presahnuti maximalni mozne delky => heslo je povazovano za neplatne
-            isNormalSize = false;
+            isNormalSize = false;   // nastaveni globalni promenne 
             continue;
         }
 
         passwdString[i] = c;
     }
+
+    stats( i );                     // zavolani funkce na vypocteni statistik o heslech
 
     if(isNormalSize)
         passwdString[i] = '\0';                        
@@ -80,7 +122,7 @@ void stringToStdout(){
     for (int i = 0; passwdString[i] != '\0' ; i++)
         putchar( passwdString[i] );
 
-    passwdNumber++;
+    passwdNumber++;       // pocitani vypsanych hesel
 }
 
 // vraci, jestli heslo obsahuje alespon jedno male pismeno
@@ -123,10 +165,10 @@ bool containsSpecialChar(){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
-        if( (passwdString[i] >= 32 && passwdString[i] < '0')  || 
+        if( (passwdString[i] >= 32 && passwdString[i] < '0')  ||    // magicke cisla 32 a 126 vznikla v zadani projektu
             (passwdString[i] > '9' && passwdString[i] < 'A')  ||
             (passwdString[i] > 'Z' && passwdString[i] < 'a')  ||
-            (passwdString[i] > 'z' && passwdString[i] <= 12)   )
+            (passwdString[i] > 'z' && passwdString[i] <= 126)   )
                 return true;
     }
     
@@ -136,12 +178,18 @@ return false;
 // vraci, jestli obsahuje sekvenci lenOfSeq stejnych znaku
 bool containsSequence(int lenOfSeq){
 
-    int lenOfPasswd = lenOfPassword();
+    int lenOfPasswd = stringLen( passwdString );
     bool seqIsSame;
 
-    if( lenOfPasswd >= lenOfSeq){
+    if( lenOfPasswd >= lenOfSeq){   // jestlize je sekvence delsi nez heslo, heslo sekvenci nemuze obsahovat
 
-        for (int i = 0; i <= lenOfPasswd - lenOfSeq; i++)
+        // X = (lenOfSeq - 1)
+        // kazdy znak v heslu testujeme s X znaky za nim
+        // pokud alespon jeden neni stejny jako pocatecni znak => sekvence neni stejna
+        // po projeti X znaku za pocatecnim znakem se pocatecni znak zveda o 1, seqIsSame se prepise na true
+        // a opet porovnavame jestli jsou dalsi znaky stejne
+
+        for (int i = 0; i <= lenOfPasswd - lenOfSeq; i++)       
         {
             seqIsSame = true;
             for (int j = 1; j < lenOfSeq; j++)
@@ -150,26 +198,16 @@ bool containsSequence(int lenOfSeq){
                     seqIsSame = false;
             }
 
-            if( seqIsSame == true)
+            if( seqIsSame == true)  
                 return true;
         }
     }
 return false;
 }
 
-// vraci delku hesla
-int lenOfPassword(){
-    int len = 0;
-
-    for (len = 0; passwdString[len] != '\0'; len++){    
-    }
-    
-return len;
-}
-
 // vraci, jestli heslo obsahuje dva stejne podretezce
 bool containsTwoSameSubstrings(int lenOfCommonString){
-    int lenOfPasswd = lenOfPassword();
+    int lenOfPasswd = stringLen( passwdString );
     int streak = 0;                                                         
 
     if( lenOfPasswd >= lenOfCommonString * 2){
@@ -213,25 +251,129 @@ bool firstLevelSecurity(){
 // vraci, jestli plati pro uroven bezpecnosti 2
 bool secondLevelSecurity(int param){
     
-    switch (param)
+    switch (param)  // param ma hodnotu vstupniho parametru PARAM
     {
-        case 3:
+        case 1:
+        case 2:{
+            if( firstLevelSecurity() )
+                return true;
+            else 
+                return false;
+        }
+        case 3:{
             if( firstLevelSecurity() && ( containsNumber() || containsSpecialChar() ))
                 return true;
             else 
                 return false;
-        
-        case 4:
-            if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )\
+        }
+        case 4:{
+            if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )
                 return true;
             else
                 return false;
-        
-        default:
-            if( firstLevelSecurity() )
+        }
+        default:{       // predpokladame ze PARAM > 4, dalsi jina situace diky paramCheck() jiz nemuze nastat
+            if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )
                 return true;
-            break;
+            else
                 return false;
+        }
+    }   
+}
+
+// vraci, jestli plati pro uroven bezpecnosti 3
+bool thirdLevelSecurity(int param){
+
+    if( secondLevelSecurity(param) && containsSequence(param) == false)
+        return true;
+    else
+        return false;
+}
+
+// vraci, jestli plati pro uroven bezpecnosti 4
+bool fourthLevelSecurity(int param){
+
+    if( thirdLevelSecurity(param) && containsTwoSameSubstrings(param) == false)
+        return true;
+    else
+        return false;
+}
+
+// prace s daty a zapisovani statistik
+void stats(int passwdLen){
+    
+    totalLen += (passwdLen);                // pocitani prumerne delky
+    passwdCount++;
+
+    if(passwdLen < shortest)                // zjisteni nejkratsiho hesla
+        shortest = passwdLen ;
+}
+
+// kontrola zadanych parametru programu, vraci true v pripade spravneho zadani
+bool paramCheck(int argCount, int level, int param, char *statsString){
+    char statsStringModel[] = "--stats";                        // vzorove pole znaku pro porovnani dobrovolneho parametru --stats
+    bool parametersRight = true;
+
+    // testovani spravneho poctu argumentu
+    if( argCount < 3 || argCount > 4 ){
+        printf("\ninvalid number of parameters => /.pwcheck.exe LEVEL PARAM [--stats]\n\n");
+        parametersRight = false;
+    }
+
+    // kontrola hodnoty parametru urcujici uroven bezpecnosti
+    if( level < 1 || level > 4 ){
+        printf("/.pwcheck.exe LEVEL PARAM [--stats]\n");
+        printf("              ^ \n");
+        printf("              | \n");
+        printf("LEVEL parameter can only be >= 1 && <= 4 \n\n");
+        parametersRight = false;
+    }
+
+    // kontrola hodnoty parametru PARAM urcujici dodatecny parametr
+    if( param < 1 || param > 4){
+        printf("/.pwcheck.exe LEVEL PARAM [--stats]\n");
+        printf("                    ^ \n");
+        printf("                    | \n");
+        printf("PARAM parameter can only be >= 1 && <= 4\n\n");
+        parametersRight = false;
+    }
+
+    // kontrola tvaru zadani nepovinneho parametru --stats
+    if( argCount == 4){                                         // pokud jsou 4 argumenty => byl zadan nepovinny --stats
+       if( !stringCompare(statsString, statsStringModel)){
+            printf("/.pwcheck.exe LEVEL PARAM [--stats]\n");
+            printf("                          ^ \n");
+            printf("                          | \n");
+            printf("expected --stats parameter instead of %s\n\n", statsString);
+            parametersRight = false;   
+        }
+    } 
+return parametersRight;
+}
+
+// vraci jestli jsou retezce stejne nebo ne
+bool stringCompare(char* str1, char* str2){
+
+    int areSame = true;
+
+    if( stringLen(str1) == stringLen(str2)){           // pokud jsou stejne dlouhe, zaciname porovnavat znak za znakem
+        for (int i = 0; str1[i] != '\0'; i++)
+        {
+            if( str1[i] != str2[i] )
+                areSame = false;
+        }
+    }
+    else areSame = false;
+    
+return areSame;
+}
+
+// vraci delku retezce
+int stringLen(char *str){
+    int i;
+
+    for ( i = 0; str[i] != '\0'; i++){      
     }
     
+return i;
 }
