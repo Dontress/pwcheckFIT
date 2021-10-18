@@ -5,7 +5,7 @@
 #define MAXLEN 100  // maximalni delka hesla
 
 // globalni promenne na ulozeni hesla, informace o EOF, jestli neni heslo moc velke a PARAM 
-char passwdString[MAXLEN];
+char passwdString[ MAXLEN ];
 bool endOfFile = false;
 bool isNormalSize;
 
@@ -49,28 +49,28 @@ int main(int argc, char *argv[]){
 
         switch ( level )
         {
-        case 1:
-            if(firstLevelSecurity())
+        case 1 :
+            if( firstLevelSecurity() )
                 stringToStdout();       // vypsani hesla
             break;
         
-        case 2:
-            if(secondLevelSecurity( param ))
+        case 2 :
+            if( secondLevelSecurity( param ) )
                 stringToStdout();
             break;
         
-        case 3:
-            if(thirdLevelSecurity( param ))
+        case 3 :
+            if( thirdLevelSecurity( param ) )
                 stringToStdout();
             break;
         
-        case 4:
-            if(fourthLevelSecurity( param ))
+        case 4 :
+            if( fourthLevelSecurity( param ) )
                 stringToStdout();
             break;
 
-        default:
-            printf("parameter LEVEL must be integer ");
+        default :
+            printf("\nerror with parameter LEVEL\n");
             return 1;
         }
 
@@ -90,14 +90,14 @@ void stdinToString(){
 
     isNormalSize = true;            // vyresetovani globalni promenne pro kazde heslo
     
-    for (i = 0; (c = getchar()) != '\n'; i++)
+    for (i = 0; ( c = getchar() ) != '\n'; i++)
     {
-         if(c == EOF){
+         if( c == EOF ){
             endOfFile = true;       // nastaveni globalni promenne na true pro ukonceni cyklu nacitani hesel v main
             break;                  // diky break se EOF nezapise do hesla
         }
 
-        if(i >= MAXLEN){            // osetreni presahnuti maximalni mozne delky => heslo je povazovano za neplatne
+        if( i >= MAXLEN ){            // osetreni presahnuti maximalni mozne delky => heslo je povazovano za neplatne
             isNormalSize = false;   // nastaveni globalni promenne 
             continue;
         }
@@ -107,7 +107,7 @@ void stdinToString(){
 
     stats( i );                     // zavolani funkce na vypocteni statistik o heslech
 
-    if(isNormalSize)
+    if( isNormalSize )
         passwdString[i] = '\0';                        
 }
 
@@ -116,8 +116,8 @@ void stringToStdout(){
 
     static int passwdNumber = 0; //zajistuje ze prvni heslo nebude odradkovane
 
-    if( passwdNumber > 0) // zajistuje odradkovani hesel na vystupu
-        putchar('\n');
+    if( passwdNumber > 0 ) // zajistuje odradkovani hesel na vystupu
+        putchar( '\n' );
 
     for (int i = 0; passwdString[i] != '\0' ; i++)
         putchar( passwdString[i] );
@@ -130,7 +130,7 @@ bool containsLower(){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
-        if(passwdString[i] >= 'a' && passwdString[i] <= 'z')
+        if( passwdString[i] >= 'a' && passwdString[i] <= 'z' )
             return true;
     }
     
@@ -142,7 +142,7 @@ bool containsUpper(){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
-        if(passwdString[i] >= 'A' && passwdString[i] <= 'Z')
+        if( passwdString[i] >= 'A' && passwdString[i] <= 'Z' )
             return true;
     }
     
@@ -153,7 +153,7 @@ return false;
 bool containsNumber(){
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
-        if(passwdString[i] >= '0' && passwdString[i] <= '9')
+        if( passwdString[i] >= '0' && passwdString[i] <= '9' )
             return true;
     }
     
@@ -181,7 +181,7 @@ bool containsSequence(int lenOfSeq){
     int lenOfPasswd = stringLen( passwdString );
     bool seqIsSame;
 
-    if( lenOfPasswd >= lenOfSeq){   // jestlize je sekvence delsi nez heslo, heslo sekvenci nemuze obsahovat
+    if( lenOfPasswd >= lenOfSeq ){   // jestlize je sekvence delsi nez heslo, heslo sekvenci nemuze obsahovat
 
         // X = (lenOfSeq - 1)
         // kazdy znak v heslu testujeme s X znaky za nim
@@ -194,11 +194,11 @@ bool containsSequence(int lenOfSeq){
             seqIsSame = true;
             for (int j = 1; j < lenOfSeq; j++)
             {
-                if( passwdString[i] != passwdString[j + i])
+                if( passwdString[i] != passwdString[j + i] )
                     seqIsSame = false;
             }
 
-            if( seqIsSame == true)  
+            if( seqIsSame == true )  
                 return true;
         }
     }
@@ -210,7 +210,7 @@ bool containsTwoSameSubstrings(int lenOfCommonString){
     int lenOfPasswd = stringLen( passwdString );
     int streak = 0;                                                         
 
-    if( lenOfPasswd >= lenOfCommonString * 2){
+    if( lenOfPasswd >= lenOfCommonString * 2 ){
 
         // Prochazi pole od 0 do (maximalni delky minus delky spolecneho retezce)
         // a hleda stejny znak, pokud ho najde, testujou se dvojce znaku na i+1 a j+1.
@@ -222,7 +222,7 @@ bool containsTwoSameSubstrings(int lenOfCommonString){
         {
             for (int j = lenOfCommonString + i; j < lenOfPasswd; j++)
             {
-                if( passwdString[i] == passwdString[j])
+                if( passwdString[i] == passwdString[j] )
                 {
                     streak++; 
                     i++;                // zvednuti i a j zaroven pro testovani dalsich spolecnych znaku
@@ -232,7 +232,7 @@ bool containsTwoSameSubstrings(int lenOfCommonString){
                     streak = 0;
                 }
                      
-                if(streak >= lenOfCommonString)
+                if( streak >= lenOfCommonString )
                     return true;
             }
         }
@@ -242,7 +242,7 @@ return false;
 
 // vraci, jestli plati pro uroven bezpecnosti 1
 bool firstLevelSecurity(){
-    if( containsLower() && containsUpper())
+    if( containsLower() && containsUpper() )
         return true;
     else    
         return false;
@@ -251,28 +251,28 @@ bool firstLevelSecurity(){
 // vraci, jestli plati pro uroven bezpecnosti 2
 bool secondLevelSecurity(int param){
     
-    switch (param)  // param ma hodnotu vstupniho parametru PARAM
+    switch ( param )   // param ma hodnotu vstupniho parametru PARAM
     {
-        case 1:
-        case 2:{
+        case 1 :
+        case 2 :{
             if( firstLevelSecurity() )
                 return true;
             else 
                 return false;
         }
-        case 3:{
-            if( firstLevelSecurity() && ( containsNumber() || containsSpecialChar() ))
+        case 3 :{
+            if( firstLevelSecurity() && ( containsNumber() || containsSpecialChar() ) )
                 return true;
             else 
                 return false;
         }
-        case 4:{
+        case 4 :{
             if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )
                 return true;
             else
                 return false;
         }
-        default:{       // predpokladame ze PARAM > 4, dalsi jina situace diky paramCheck() jiz nemuze nastat
+        default :{       // predpokladame ze PARAM > 4, dalsi jina situace diky paramCheck() jiz nemuze nastat
             if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )
                 return true;
             else
@@ -284,7 +284,7 @@ bool secondLevelSecurity(int param){
 // vraci, jestli plati pro uroven bezpecnosti 3
 bool thirdLevelSecurity(int param){
 
-    if( secondLevelSecurity(param) && containsSequence(param) == false)
+    if( secondLevelSecurity( param ) && containsSequence( param ) == false )
         return true;
     else
         return false;
@@ -293,7 +293,7 @@ bool thirdLevelSecurity(int param){
 // vraci, jestli plati pro uroven bezpecnosti 4
 bool fourthLevelSecurity(int param){
 
-    if( thirdLevelSecurity(param) && containsTwoSameSubstrings(param) == false)
+    if( thirdLevelSecurity( param ) && containsTwoSameSubstrings( param ) == false )
         return true;
     else
         return false;
@@ -302,7 +302,7 @@ bool fourthLevelSecurity(int param){
 // prace s daty a zapisovani statistik
 void stats(int passwdLen){
     
-    totalLen += (passwdLen);                // pocitani prumerne delky
+    totalLen += passwdLen;                // pocitani prumerne delky
     passwdCount++;
 
     if(passwdLen < shortest)                // zjisteni nejkratsiho hesla
@@ -356,7 +356,7 @@ bool stringCompare(char* str1, char* str2){
 
     int areSame = true;
 
-    if( stringLen(str1) == stringLen(str2)){           // pokud jsou stejne dlouhe, zaciname porovnavat znak za znakem
+    if( stringLen( str1 ) == stringLen( str2 ) ){           // pokud jsou stejne dlouhe, zaciname porovnavat znak za znakem
         for (int i = 0; str1[i] != '\0'; i++)
         {
             if( str1[i] != str2[i] )
