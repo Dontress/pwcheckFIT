@@ -85,7 +85,7 @@ return 0;
 
 // naplni globalni pole znaku heslem 
 void stdinToString(){
-    char c;
+    int c;
     int i;
 
     isNormalSize = true;            // vyresetovani globalni promenne pro kazde heslo
@@ -171,7 +171,6 @@ bool containsSpecialChar(){
             (passwdString[i] > 'z' && passwdString[i] <= 126)   )
                 return true;
     }
-    
 return false;
 }
 
@@ -316,7 +315,7 @@ bool paramCheck(int argCount, int level, int param, char *statsString){
 
     // testovani spravneho poctu argumentu
     if( argCount < 3 || argCount > 4 ){
-        printf("\ninvalid number of parameters => /.pwcheck LEVEL PARAM [--stats]\n\n");
+        printf("\nerror, invalid number of parameters => /.pwcheck LEVEL PARAM [--stats]\n");
         parametersRight = false;
     }
 
@@ -325,7 +324,7 @@ bool paramCheck(int argCount, int level, int param, char *statsString){
         printf("/.pwcheck LEVEL PARAM [--stats]\n");
         printf("            ^ \n");
         printf("            | \n");
-        printf("LEVEL parameter can only be >= 1 && <= 4 \n\n");
+        printf("error, LEVEL parameter can only be >= 1 && <= 4 \n");
         parametersRight = false;
     }
 
@@ -334,7 +333,7 @@ bool paramCheck(int argCount, int level, int param, char *statsString){
         printf("/.pwcheck LEVEL PARAM [--stats]\n");
         printf("                  ^ \n");
         printf("                  | \n");
-        printf("PARAM parameter can only be >= 1 && <= 4\n\n");
+        printf("error, PARAM parameter can only be >= 1 && <= 4\n");
         parametersRight = false;
     }
 
@@ -344,7 +343,7 @@ bool paramCheck(int argCount, int level, int param, char *statsString){
             printf("/.pwcheck LEVEL PARAM [--stats]\n");
             printf("                          ^ \n");
             printf("                          | \n");
-            printf("expected --stats instead of %s\n\n", statsString);
+            printf("error, expected \"--stats\" instead of \"%s\"\n", statsString);
             parametersRight = false;   
         }
     } 
