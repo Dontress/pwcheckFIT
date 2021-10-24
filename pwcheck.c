@@ -4,31 +4,35 @@
 
 #define MAXLEN 100  // maximalni delka hesla
 
-// globalni promenne na ulozeni hesla, informace o EOF, jestli neni heslo moc velke a PARAM 
-char passwdString[ MAXLEN ];
-bool endOfFile = false;
-bool isNormalSize;
 
-// stats
-int varChar = 0;
-int shortest = MAXLEN;
-int totalLen = 0;
-int passwdCount = 0;
+typedef struct{
+    char passwdString[ MAXLEN ];
+    bool endOfFile;
+    bool isNormalSize;
+    int passwdLen;
+}Password;
+
+typedef struct{
+    int varChar;
+    int shortest;
+    int totalLen;
+    int passwdCount;
+}Stats;
 
 // Function prototypes
-void stdinToString();
-void stringToStdout();
+Password stdinToString();
+void stringToStdout( Password password );
 bool containsLower();
 bool containsUpper();
 bool containsNumber();
 bool containsSpecialChar();
-bool containsSequence(int lenOfSeq);
-bool containsTwoSameSubstrings(int lenOfString);
-bool firstLevelSecurity();
-bool secondLevelSecurity(int param);
-bool thirdLevelSecurity(int param);
-bool fourthLevelSecurity(int param);
-void stats(int i);
+bool containsSequence( char passwdString[ MAXLEN ], int lenOfPasswd, int lenOfSeq );
+bool containsTwoSameSubstrings(char passwdString[ MAXLEN ], int lenOfPasswd, int lenOfCommonString);
+bool firstLevelSecurity( Password password);
+bool secondLevelSecurity(Password password, int param);
+bool thirdLevelSecurity(Password password, int param);
+bool fourthLevelSecurity(Password password, int param);
+void setStats(Password passwd, Stats* stats);
 bool paramCheck(int argCount, int level,int param, char* statsString);
 bool stringCompare(char* str1, char* str2);
 int stringLen(char *str);
@@ -37,36 +41,47 @@ int stringLen(char *str);
 // FUNKCE MAIN
 //--------------
 int main(int argc, char *argv[]){
-
-    int level = atoi(argv[1]);
-    int param =  atoi(argv[2]);
+    int level = 0, param = 0;
+    level = atoi(argv[1]);
+    param =  atoi(argv[2]);
 
     if( !paramCheck(argc, level, param, argv[3]) )      // kontrola platnosti parametru
       return 1;
 
+    // deklarovani struktury pro praci s heslem
+    Password password;
+
+    // deklarovani a vynulovani Stats
+    Stats stats;
+    stats.shortest = MAXLEN;
+    stats.totalLen = 0;
+    stats.varChar = 0;
+    stats.passwdCount = 0;
+
     do{
-        stdinToString();    // nacteni hesla
+        password = stdinToString();    // nacteni hesla
+        setStats(password, &stats);
 
         switch ( level )
         {
         case 1 :
-            if( firstLevelSecurity() )
-                stringToStdout();       // vypsani hesla
+            if( firstLevelSecurity( password ) )
+                stringToStdout( password );       // vypsani hesla
             break;
         
         case 2 :
-            if( secondLevelSecurity( param ) )
-                stringToStdout();
+            if( secondLevelSecurity( password, param ) )
+                stringToStdout( password );
             break;
         
         case 3 :
-            if( thirdLevelSecurity( param ) )
-                stringToStdout();
+            if( thirdLevelSecurity( password, param ) )
+                stringToStdout( password );
             break;
         
         case 4 :
-            if( fourthLevelSecurity( param ) )
-                stringToStdout();
+            if( fourthLevelSecurity( password, param ) )
+                stringToStdout( password );
             break;
 
         default :
@@ -74,59 +89,65 @@ int main(int argc, char *argv[]){
             return 1;
         }
 
-    }while( endOfFile == false ); 
+    }while( password.endOfFile == false ); 
 
     // zjistovani zadani parametru --stats a pripadne vypsani statistik
     if( stringCompare( argv[3] , "--stats" ) )
-        printf("\nStatistika:\nMinimalni delka: %d\nPrumerna delka: %0.1f", shortest, totalLen/(float)passwdCount);
+        printf("\nStatistika:\nMinimalni delka: %d\nPrumerna delka: %0.1f", stats.shortest, stats.totalLen/(float)stats.passwdCount);
 
 return 0;
 }
 
 // naplni globalni pole znaku heslem 
-void stdinToString(){
+Password stdinToString(){
     int c;
     int i;
 
-    isNormalSize = true;            // vyresetovani globalni promenne pro kazde heslo
+    Password passwd;
+    passwd.endOfFile = false;
+
+    passwd.isNormalSize = true;           
     
     for (i = 0; ( c = getchar() ) != '\n'; i++)
     {
          if( c == EOF ){
-            endOfFile = true;       // nastaveni globalni promenne na true pro ukonceni cyklu nacitani hesel v main
+            passwd.endOfFile = true;       
             break;                  // diky break se EOF nezapise do hesla
         }
 
         if( i >= MAXLEN ){            // osetreni presahnuti maximalni mozne delky => heslo je povazovano za neplatne
-            isNormalSize = false;   // nastaveni globalni promenne 
+            passwd.isNormalSize = false;   // nastaveni globalni promenne 
             continue;
         }
 
-        passwdString[i] = c;
+        passwd.passwdString[i] = c;
     }
 
-    stats( i );                     // zavolani funkce na vypocteni statistik o heslech
+    passwd.passwdLen = i;
+                        // zavolani funkce na vypocteni statistik o heslech
 
-    if( isNormalSize )
-        passwdString[i] = '\0';                        
+    if( passwd.isNormalSize )
+        passwd.passwdString[i] = '\0';      
+
+    return passwd;                  
 }
 
 // posila prave nactene heslo (globalni string) do stdout
-void stringToStdout(){
+void stringToStdout(Password passwd){
 
     static int passwdNumber = 0; //zajistuje ze prvni heslo nebude odradkovane
 
     if( passwdNumber > 0 ) // zajistuje odradkovani hesel na vystupu
         putchar( '\n' );
 
-    for (int i = 0; passwdString[i] != '\0' ; i++)
-        putchar( passwdString[i] );
+    for (int i = 0; passwd.passwdString[i] != '\0' ; i++)
+        putchar( passwd.passwdString[i] );
 
     passwdNumber++;       // pocitani vypsanych hesel
 }
 
 // vraci, jestli heslo obsahuje alespon jedno male pismeno
-bool containsLower(){
+bool containsLower( char passwdString[ MAXLEN ] ){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
@@ -138,7 +159,7 @@ return false;
 }
 
 // vraci, jestli heslo obsahuje alespon jedno velke pismeno
-bool containsUpper(){
+bool containsUpper( char passwdString[ MAXLEN ] ){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
@@ -150,7 +171,7 @@ return false;
 }
 
 // vraci, jestli heslo obsahuje alespon jedno cislo
-bool containsNumber(){
+bool containsNumber( char passwdString[ MAXLEN ]){
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
         if( passwdString[i] >= '0' && passwdString[i] <= '9' )
@@ -161,7 +182,7 @@ return false;
 }
 
 // vraci, jestli heslo obsahuje alespon jeden specialni znak
-bool containsSpecialChar(){
+bool containsSpecialChar( char passwdString[ MAXLEN ]){
 
     for (int i = 0; passwdString[i] != '\0'; i++)
     {
@@ -175,9 +196,8 @@ return false;
 }
 
 // vraci, jestli obsahuje sekvenci lenOfSeq stejnych znaku
-bool containsSequence(int lenOfSeq){
+bool containsSequence( char passwdString[ MAXLEN ], int lenOfPasswd, int lenOfSeq ){
 
-    int lenOfPasswd = stringLen( passwdString );
     bool seqIsSame;
 
     if( lenOfPasswd >= lenOfSeq ){   // jestlize je sekvence delsi nez heslo, heslo sekvenci nemuze obsahovat
@@ -205,8 +225,7 @@ return false;
 }
 
 // vraci, jestli heslo obsahuje dva stejne podretezce
-bool containsTwoSameSubstrings(int lenOfCommonString){
-    int lenOfPasswd = stringLen( passwdString );
+bool containsTwoSameSubstrings(char passwdString[ MAXLEN ], int lenOfPasswd, int lenOfCommonString){
     int streak = 0;                                                         
 
     if( lenOfPasswd >= lenOfCommonString * 2 ){
@@ -240,39 +259,39 @@ return false;
 }
 
 // vraci, jestli plati pro uroven bezpecnosti 1
-bool firstLevelSecurity(){
-    if( containsLower() && containsUpper() )
+bool firstLevelSecurity( Password password){
+    if( containsLower( password.passwdString ) && containsUpper( password.passwdString ) )
         return true;
     else    
         return false;
 }
 
 // vraci, jestli plati pro uroven bezpecnosti 2
-bool secondLevelSecurity(int param){
+bool secondLevelSecurity(Password password, int param){
     
     switch ( param )   // param ma hodnotu vstupniho parametru PARAM
     {
         case 1 :
         case 2 :{
-            if( firstLevelSecurity() )
+            if( firstLevelSecurity( password ) )
                 return true;
             else 
                 return false;
         }
         case 3 :{
-            if( firstLevelSecurity() && ( containsNumber() || containsSpecialChar() ) )
+            if( firstLevelSecurity( password ) && ( containsNumber( password.passwdString ) || containsSpecialChar( password.passwdString) ) )
                 return true;
             else 
                 return false;
         }
         case 4 :{
-            if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )
+            if( firstLevelSecurity( password ) && containsNumber( password.passwdString ) && containsSpecialChar( password.passwdString ) )
                 return true;
             else
                 return false;
         }
         default :{       // predpokladame ze PARAM > 4, dalsi jina situace diky paramCheck() jiz nemuze nastat
-            if( firstLevelSecurity() && containsNumber() && containsSpecialChar() )
+            if( firstLevelSecurity( password ) && containsNumber( password.passwdString ) && containsSpecialChar( password.passwdString ) )
                 return true;
             else
                 return false;
@@ -281,31 +300,31 @@ bool secondLevelSecurity(int param){
 }
 
 // vraci, jestli plati pro uroven bezpecnosti 3
-bool thirdLevelSecurity(int param){
+bool thirdLevelSecurity(Password password, int param){
 
-    if( secondLevelSecurity( param ) && containsSequence( param ) == false )
+    if( secondLevelSecurity( password, param ) && containsSequence( password.passwdString, password.passwdLen, param ) == false )
         return true;
     else
         return false;
 }
 
 // vraci, jestli plati pro uroven bezpecnosti 4
-bool fourthLevelSecurity(int param){
+bool fourthLevelSecurity(Password password, int param){
 
-    if( thirdLevelSecurity( param ) && containsTwoSameSubstrings( param ) == false )
+    if( thirdLevelSecurity( password, param ) && containsTwoSameSubstrings( password.passwdString, password.passwdLen, param ) == false )
         return true;
     else
         return false;
 }
 
 // prace s daty a zapisovani statistik
-void stats(int passwdLen){
+void setStats(Password passwd, Stats* stats){
     
-    totalLen += passwdLen;                // pocitani prumerne delky
-    passwdCount++;
+    stats->totalLen += passwd.passwdLen;                // pocitani prumerne delky
+    stats->passwdCount++;
 
-    if(passwdLen < shortest)                // zjisteni nejkratsiho hesla
-        shortest = passwdLen ;
+    if( passwd.passwdLen < stats->shortest)                // zjisteni nejkratsiho hesla
+        stats->shortest = passwd.passwdLen ;
 }
 
 // kontrola zadanych parametru programu, vraci true v pripade spravneho zadani
